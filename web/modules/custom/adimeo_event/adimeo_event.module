@@ -1,0 +1,74 @@
+<?php
+
+use Drupal\Core\Datetime\DrupalDateTime;
+use Drupal\Core\Queue\QueueWorkerInterface;
+use Drupal\Core\Queue\SuspendQueueException;
+use Drupal\node\Entity\Node;
+
+/**
+ * @file
+ * Primary module hooks for Adimeo Event module.
+ *
+ * @DCG
+ * This file is no longer required in Drupal 8.
+ * @see https://www.drupal.org/node/2217931
+ */
+
+
+function adimeo_event_theme($existing, $type, $theme, $path)
+{
+  return [
+    'event_block' => [
+      'variables' => [
+        'relatedEvents' => NULL,
+        'otherEvents' => NULL,
+      ]
+    ]
+  ];
+}
+
+
+function adimeo_event_cron() {
+
+  $queue = \Drupal::queue('adimeo_event_eventqueue');
+
+  $now = new DrupalDateTime('');
+
+  $query = \Drupal::entityQuery('node');
+  $query
+    ->condition('type', 'event')
+    ->condition('field_date_end', $now, '<');
+
+  $relatedNids = $query->execute();
+
+  $nodes = Node::loadMultiple($relatedNids);
+
+  if ($queue->numberOfItems() === 0){
+    foreach ($nodes as $node){
+      $queue->createItem($node);
+    }
+    \Drupal::messenger()->addMessage($queue->numberOfItems() . ' events to unpublish');
+  }
+
+    /** @var QueueWorkerInterface $queue_manager */
+    $queue_manager = \Drupal::service('plugin.manager.queue_worker');
+    $queue_worker  = $queue_manager->createInstance("adimeo_event_eventqueue");
+
+    $i = 0;
+    while($item = $queue->claimItem()) {
+      try {
+        $queue_worker->processItem($item->data);
+        $queue->deleteItem($item);
+        $i++;
+      }
+      catch (SuspendQueueException $e) {
+        $queue->releaseItem($item);
+        break;
+      }
+      catch (\Exception $e) {
+        watchdog_exception('npq', $e);
+      }
+    }
+    \Drupal::messenger()->addMessage($i . ' events unpublished');
+
+}

@@ -1,0 +1,18 @@
+
+<h3>Évènements de la même catégorie</h3>
+
+{% for event in relatedEvents %}
+    <a href="{{ path('entity.node.canonical', {'node': event.id }) }}">
+        {{ event.title.value }}
+    </a>
+    <br>
+{% endfor %}
+
+<h3>Autres évènements</h3>
+
+{% for event in otherEvents %}
+    <a href="{{ path('entity.node.canonical', {'node': event.id }) }}">
+        {{ event.title.value }}
+    </a>
+    <br>
+{% endfor %}
