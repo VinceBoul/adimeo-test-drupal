@@ -28,17 +28,19 @@ qui **dépublie** les événements dont la date de fin est dépassée à l'aide 
 
 **Le temps que vous avez passé** : par mail ou dans un readme par exemple.
 
+_____
+
 ## Réalisation
 
 Temps passé (environ)
-- Installation + développement du plugin block
+- Installation + développement du plugin block ; 2h
 - Développement du Queue Worker : 2h
 - Derniers tests / Mise au propre / Readme : 2h
 
 Précédure de test :
 
 * Cloner le répo
-* Importer la bdd
+* Importer la bdd à partir du fichier `drupal_adimeo.zip`
 * Compléter le fichier settings.local.php pour la connexion à la BDD
 * Dézipper le zip des fichiers statiques
 * Exercice 1 : Tester la page d'un event pour voir les 3 events liés (ou pas) à un article
